@@ -1,10 +1,52 @@
-import { useContext } from 'react';
-import { AuthContext } from '../context/AuthContext';
+// src/hooks/useAuth.js
 
-export const useAuth = () => {
-    const context = useContext(AuthContext);
-    if (!context) {
-        throw new Error('useAuth must be used within an AuthProvider');
-    }
-    return context;
+import { useState, useEffect } from 'react';
+import { auth, db } from '../firebase/config'; 
+
+/**
+ * Task 4: Hook to listen to Firebase Auth state and fetch user details/role.
+ */
+const useAuth = () => {
+    const [user, setUser] = useState(null); 
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        // Task 4: Listen to Firebase onAuthStateChanged()
+        const unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
+            if (firebaseUser) {
+                // User logged in, fetch their role from Firestore
+                try {
+                    const userDoc = await db.collection('users').doc(firebaseUser.uid).get();
+                    
+                    if (userDoc.exists) {
+                        const userData = userDoc.data();
+                        setUser({
+                            uid: firebaseUser.uid,
+                            email: firebaseUser.email,
+                            name: userData.name,
+                            role: userData.role || 'user', // Default safety
+                        });
+                    } else {
+                        // Fallback case
+                        setUser({ uid: firebaseUser.uid, email: firebaseUser.email, role: 'user' });
+                    }
+                } catch (error) {
+                    console.error("Error fetching user role:", error);
+                    setUser({ uid: firebaseUser.uid, email: firebaseUser.email, role: 'user' });
+                }
+            } else {
+                // User logged out
+                setUser(null);
+            }
+            setLoading(false);
+        });
+
+        // Cleanup subscription on unmount
+        return () => unsubscribe();
+    }, []);
+
+    // Task 4: Return realtime currentUser and loading state
+    return { user, loading };
 };
+
+export default useAuth;

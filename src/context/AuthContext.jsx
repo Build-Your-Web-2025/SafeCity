@@ -1,24 +1,36 @@
-import React, { createContext, useState, useEffect } from 'react';
-import { subscribeToAuthChanges } from '../services/authService';
+// src/context/AuthContext.jsx
 
+import React, { createContext } from 'react';
+import useAuth from '../hooks/useAuth';
+
+// Task 3: Create the Context
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const { user, loading } = useAuth(); 
 
-    useEffect(() => {
-        const unsubscribe = subscribeToAuthChanges((user) => {
-            setUser(user);
-            setLoading(false);
-        });
+    // Helper for easy route protection
+    const isAdmin = user && user.role === 'admin';
 
-        return unsubscribe;
-    }, []);
+    const contextValue = {
+        user,
+        loading,
+        isAdmin, // Task 3: Store user role
+    };
 
+    // Show a global loading screen while checking auth state
+    if (loading) {
+        return (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', fontSize: '24px' }}>
+                Checking User Authentication...
+            </div>
+        );
+    }
+
+    // Task 3: Provide current user to all pages
     return (
-        <AuthContext.Provider value={{ user, loading }}>
-            {!loading && children}
+        <AuthContext.Provider value={contextValue}>
+            {children}
         </AuthContext.Provider>
     );
 };
