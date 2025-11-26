@@ -5,7 +5,6 @@ import {
     IconClipboardText,
     IconFileText,
     IconFilter,
-    IconChartBar,
     IconSettings,
     IconLogout,
     IconSearch,
@@ -61,13 +60,7 @@ export default function Dashboard() {
                 <IconFilter className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
             ),
         },
-        {
-            label: "Statistics",
-            href: "/statistics",
-            icon: (
-                <IconChartBar className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-            ),
-        },
+        // Statistics link removed here
         {
             label: "App Settings",
             href: "/settings",
@@ -185,7 +178,6 @@ const DashboardContent = ({ user }) => {
                     <div className="flex items-center gap-4">
                         <IconBell className="h-6 w-6 text-neutral-700 dark:text-neutral-200" />
                         <div className="relative">
-                            {/* 4. Connect Input to State */}
                             <input
                                 type="text"
                                 placeholder="Search incidents..."
@@ -231,7 +223,7 @@ const DashboardContent = ({ user }) => {
                         </button>
                     </div>
 
-                    {/* Stats Cards */}
+                    {/* Stats Cards - CLEANED UP (No Help/FAQs) */}
                     <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
                         
                         {/* Active Reports Card */}
@@ -254,7 +246,7 @@ const DashboardContent = ({ user }) => {
                             </div>
                         </div>
 
-                        {/* Total Incidents */}
+                        {/* Total Incidents (Clean Number) */}
                         <div className="bg-blue-600 p-4 rounded-lg text-white flex flex-col items-center justify-center shadow-lg">
                             <div className="text-4xl font-bold mb-1">{incidents.length}</div>
                             <div className="text-xs font-medium opacity-90">Total Incidents</div>
@@ -290,7 +282,7 @@ const DashboardContent = ({ user }) => {
                         </div>
                     </div>
 
-                    {/* Recent Incidents (LIVE DATA & FILTERED) */}
+                    {/* Recent Incidents (LIVE DATA) */}
                     <div className="space-y-6">
                         <div className="bg-white dark:bg-neutral-800 p-6 rounded-lg border border-neutral-200 dark:border-neutral-700 h-full flex flex-col">
                             <div className="flex justify-between items-center mb-4">
@@ -316,7 +308,6 @@ const DashboardContent = ({ user }) => {
                                         )}
                                     </div>
                                 ) : (
-                                    // 5. Use filteredIncidents instead of incidents
                                     filteredIncidents.map((incident) => (
                                         <div key={incident.id} className="flex items-center justify-between p-3 bg-neutral-50 dark:bg-neutral-700 rounded-lg border border-transparent hover:border-neutral-200 dark:hover:border-neutral-600 transition-all">
                                             <div className="flex items-center gap-3 overflow-hidden">

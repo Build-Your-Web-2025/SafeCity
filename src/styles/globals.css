@@ -13,15 +13,26 @@
   scroll-behavior: smooth;
 }
 
-body {
+/* 1. GLOBAL RESET: Ensure the app takes full screen height without white bars */
+html, body, #root {
   margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #171717; /* Dark background to match your theme */
+}
+
+body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* 2. FIX: Removed the 70px top margin that was causing the white space */
 .app-container {
-  margin-top: 70px;
+  margin-top: 0px; 
+  min-height: 100%;
+  width: 100%;
 }
 
 code {

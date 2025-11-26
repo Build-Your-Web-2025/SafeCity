@@ -10,7 +10,6 @@ import AdminPanel from './pages/AdminPanel';
 // Imports from the incoming remote branch (Keep these)
 import UserReports from './pages/UserReports';
 import FilterIncidents from './pages/FilterIncidents';
-import Statistics from './pages/Statistics';
 import AppSettings from './pages/AppSettings';
 
 // Use your local default import (Matches your useAuth.js file)
@@ -71,14 +70,6 @@ const AppRoutes = () => {
                 element={
                     <PrivateRoute>
                         <FilterIncidents />
-                    </PrivateRoute>
-                }
-            />
-            <Route
-                path="/statistics"
-                element={
-                    <PrivateRoute>
-                        <Statistics />
                     </PrivateRoute>
                 }
             />
