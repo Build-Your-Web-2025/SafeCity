@@ -1,16 +1,25 @@
-import { useEffect, useState } from "react";
-import { listenToIncidents } from "../services/incidentService";
+import { useState, useEffect } from 'react';
+import { getIncidents } from '../services/incidentService';
 
-export default function useIncidents() {
-  const [incidents, setIncidents] = useState([]);
+export const useIncidents = () => {
+    const [incidents, setIncidents] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const unsubscribe = listenToIncidents((list) => {
-      setIncidents(list);
-    });
+    useEffect(() => {
+        const fetchIncidents = async () => {
+            try {
+                const data = await getIncidents();
+                setIncidents(data);
+            } catch (err) {
+                setError(err);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-    return () => unsubscribe();
-  }, []);
+        fetchIncidents();
+    }, []);
 
-  return incidents;
-}
+    return { incidents, loading, error };
+};
