@@ -5,6 +5,10 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import ReportIncident from './pages/ReportIncident';
 import AdminPanel from './pages/AdminPanel';
+import UserReports from './pages/UserReports';
+import FilterIncidents from './pages/FilterIncidents';
+import Statistics from './pages/Statistics';
+import AppSettings from './pages/AppSettings';
 import { useAuth } from './hooks/useAuth';
 
 const PrivateRoute = ({ children }) => {
@@ -41,6 +45,38 @@ const AppRoutes = () => {
                 element={
                     <PrivateRoute>
                         <AdminPanel />
+                    </PrivateRoute>
+                }
+            />
+            <Route
+                path="/user-reports"
+                element={
+                    <PrivateRoute>
+                        <UserReports />
+                    </PrivateRoute>
+                }
+            />
+            <Route
+                path="/filter-incidents"
+                element={
+                    <PrivateRoute>
+                        <FilterIncidents />
+                    </PrivateRoute>
+                }
+            />
+            <Route
+                path="/statistics"
+                element={
+                    <PrivateRoute>
+                        <Statistics />
+                    </PrivateRoute>
+                }
+            />
+            <Route
+                path="/settings"
+                element={
+                    <PrivateRoute>
+                        <AppSettings />
                     </PrivateRoute>
                 }
             />

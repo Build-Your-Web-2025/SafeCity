@@ -35,7 +35,7 @@ export default function Dashboard() {
     const links = [
         {
             label: "Incident Dashboard",
-            href: "#",
+            href: "/dashboard",
             icon: (
                 <IconClipboardText className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
             ),
@@ -49,28 +49,28 @@ export default function Dashboard() {
         },
         {
             label: "User Reports",
-            href: "#",
+            href: "/user-reports",
             icon: (
                 <IconUser className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
             ),
         },
         {
             label: "Filter Incidents",
-            href: "#",
+            href: "/filter-incidents",
             icon: (
                 <IconFilter className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
             ),
         },
         {
             label: "Statistics",
-            href: "#",
+            href: "/statistics",
             icon: (
                 <IconChartBar className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
             ),
         },
         {
             label: "App Settings",
-            href: "#",
+            href: "/settings",
             icon: (
                 <IconSettings className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
             ),
