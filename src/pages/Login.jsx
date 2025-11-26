@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { loginUser } from "../services/authService";
-import authIllustration from '/home/shaggy/.gemini/antigravity/brain/0897cda3-d35d-4458-928e-e1370267fed6/auth_branding_illustration_1764141410938.png';
-
+// REPLACE the broken import line with this:
+const authIllustration = "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?q=80&w=2672&auto=format&fit=crop";
 export default function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");

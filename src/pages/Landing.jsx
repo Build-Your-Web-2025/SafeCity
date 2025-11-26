@@ -12,7 +12,8 @@ import {
     IconCheck,
 } from '@tabler/icons-react';
 import AnimatedCounter from '../components/AnimatedCounter';
-import heroBackground from '/home/shaggy/.gemini/antigravity/brain/0897cda3-d35d-4458-928e-e1370267fed6/hero_background_city_1764140744325.png';
+// REPLACE the broken import line with this:
+const heroBackground = "https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?q=80&w=2613&auto=format&fit=crop";
 
 const Landing = () => {
     const navigate = useNavigate();
