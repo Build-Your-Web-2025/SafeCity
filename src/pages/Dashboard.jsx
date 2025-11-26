@@ -16,6 +16,7 @@ import {
 import { motion } from "framer-motion";
 import { cn } from "../lib/utils";
 import useAuth from "../hooks/useAuth";
+import useIncidents from "../hooks/useIncidents"; // <--- Import the hook
 import { logoutUser } from "../services/authService";
 import { useNavigate } from "react-router-dom";
 
@@ -118,7 +119,7 @@ export default function Dashboard() {
                     </div>
                 </SidebarBody>
             </Sidebar>
-            <DashboardContent />
+            <DashboardContent user={user} />
         </div>
     );
 }
@@ -152,8 +153,20 @@ export const LogoIcon = () => {
     );
 };
 
-const DashboardContent = () => {
+const DashboardContent = ({ user }) => {
+    // 1. Fetch real-time data using the hook
+    const { incidents, loading } = useIncidents();
+    const navigate = useNavigate();
+
     const currentMonth = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+    // Helper to format timestamp
+    const formatTime = (timestamp) => {
+        if (!timestamp) return 'Just now';
+        // Handle Firestore Timestamp or standard Date
+        const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    };
 
     return (
         <div className="flex flex-1 overflow-auto">
@@ -176,51 +189,50 @@ const DashboardContent = () => {
                         <IconMessageCircle className="h-6 w-6 text-neutral-700 dark:text-neutral-200" />
                         <div className="flex items-center gap-2">
                             <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold">
-                                JD
+                                {user?.email?.[0]?.toUpperCase()}
                             </div>
-                            <span className="text-sm font-medium text-neutral-700 dark:text-neutral-200">John Doe</span>
+                            <span className="text-sm font-medium text-neutral-700 dark:text-neutral-200">
+                                {user?.displayName || "User"}
+                            </span>
                         </div>
                     </div>
                 </div>
 
                 {/* Welcome Section */}
                 <div>
-                    <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">Welcome back, User</h1>
+                    <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
+                        Welcome back, {user?.displayName?.split(' ')[0] || "User"}
+                    </h1>
                     <p className="text-neutral-600 dark:text-neutral-400">View and report incidents easily.</p>
                 </div>
 
                 {/* Action Button & Cards */}
                 <div className="flex flex-col md:flex-row gap-4">
                     <div className="flex-1">
-                        <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium">
+                        <button 
+                            onClick={() => navigate('/report')}
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium"
+                        >
                             Report Incident
                         </button>
 
                         {/* Meeting Cards */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                             <div className="bg-white dark:bg-neutral-800 p-4 rounded-lg border border-neutral-200 dark:border-neutral-700">
-                                <h3 className="font-semibold text-neutral-900 dark:text-neutral-100">Next review meeting</h3>
-                                <p className="text-sm text-neutral-600 dark:text-neutral-400">Week 3</p>
+                                <h3 className="font-semibold text-neutral-900 dark:text-neutral-100">Active Reports</h3>
+                                <p className="text-sm text-neutral-600 dark:text-neutral-400">Total: {incidents.length}</p>
                                 <div className="flex items-center gap-2 mt-2">
-                                    <div className="flex -space-x-2">
-                                        {[1, 2, 3].map((i) => (
-                                            <div key={i} className="h-6 w-6 rounded-full bg-blue-500 border-2 border-white dark:border-neutral-800" />
-                                        ))}
-                                    </div>
-                                    <span className="text-xs text-neutral-600 dark:text-neutral-400">Incident Team</span>
+                                    <span className="text-xs text-neutral-600 dark:text-neutral-400">Updates Live</span>
                                 </div>
                             </div>
 
                             <div className="bg-white dark:bg-neutral-800 p-4 rounded-lg border border-neutral-200 dark:border-neutral-700">
-                                <h3 className="font-semibold text-neutral-900 dark:text-neutral-100">Next updates</h3>
-                                <p className="text-sm text-neutral-600 dark:text-neutral-400">Week 3</p>
+                                <h3 className="font-semibold text-neutral-900 dark:text-neutral-100">Latest Update</h3>
+                                <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                                    {incidents.length > 0 ? incidents[0].category : "No reports"}
+                                </p>
                                 <div className="flex items-center gap-2 mt-2">
-                                    <div className="flex -space-x-2">
-                                        {[1, 2, 3].map((i) => (
-                                            <div key={i} className="h-6 w-6 rounded-full bg-green-500 border-2 border-white dark:border-neutral-800" />
-                                        ))}
-                                    </div>
-                                    <span className="text-xs text-neutral-600 dark:text-neutral-400">Incident Team</span>
+                                    <span className="text-xs text-neutral-600 dark:text-neutral-400">Just now</span>
                                 </div>
                             </div>
                         </div>
@@ -229,33 +241,21 @@ const DashboardContent = () => {
                     {/* Status Cards */}
                     <div className="flex gap-4">
                         <div className="bg-blue-500 p-6 rounded-lg text-white min-w-[140px] flex flex-col items-center justify-center">
-                            <div className="text-4xl font-bold mb-2">75</div>
-                            <div className="text-sm">Current incident status</div>
+                            <div className="text-4xl font-bold mb-2">{incidents.length}</div>
+                            <div className="text-sm">Total Incidents</div>
                         </div>
                         <div className="bg-blue-600 p-6 rounded-lg text-white min-w-[140px] flex flex-col items-center justify-center relative">
                             <div className="absolute top-2 right-2">
                                 <IconFlag className="h-5 w-5" />
                             </div>
-                            <div className="grid grid-cols-2 gap-2 mt-4">
-                                {[1, 2, 3, 4].map((i) => (
-                                    <div key={i} className="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center">
-                                        <span className="text-xs">?</span>
-                                    </div>
-                                ))}
-                            </div>
+                            <div className="text-4xl font-bold mb-2">?</div>
                             <div className="text-sm mt-2">Help & Support</div>
                         </div>
                         <div className="bg-blue-700 p-6 rounded-lg text-white min-w-[140px] flex flex-col items-center justify-center relative">
                             <div className="absolute top-2 right-2">
                                 <IconFlag className="h-5 w-5" />
                             </div>
-                            <div className="grid grid-cols-2 gap-2 mt-4">
-                                {[1, 2, 3, 4].map((i) => (
-                                    <div key={i} className="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center">
-                                        <span className="text-xs">?</span>
-                                    </div>
-                                ))}
-                            </div>
+                            <div className="text-4xl font-bold mb-2">?</div>
                             <div className="text-sm mt-2">FAQs</div>
                         </div>
                     </div>
@@ -265,84 +265,89 @@ const DashboardContent = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* My Reports */}
                     <div className="bg-white dark:bg-neutral-800 p-6 rounded-lg border border-neutral-200 dark:border-neutral-700">
-                        <h2 className="text-xl font-bold mb-4 text-neutral-900 dark:text-neutral-100">My Reports</h2>
-                        <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4">3 active incidents</p>
-
+                        <h2 className="text-xl font-bold mb-4 text-neutral-900 dark:text-neutral-100">Quick Actions</h2>
+                        
                         <div className="space-y-3">
                             {[
-                                { title: "Report new incident", tag: "Incidents" },
-                                { title: "Manage your incidents", tag: "New" },
-                                { title: "Filter by severity and status", tag: "Incidents" }
+                                { title: "Report new incident", tag: "Action", action: () => navigate('/report') },
+                                { title: "View Map", tag: "View", action: () => {} },
                             ].map((item, idx) => (
-                                <div key={idx} className="flex items-center justify-between p-3 bg-neutral-50 dark:bg-neutral-700 rounded-lg">
+                                <div 
+                                    key={idx} 
+                                    onClick={item.action}
+                                    className="flex items-center justify-between p-3 bg-neutral-50 dark:bg-neutral-700 rounded-lg cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-600"
+                                >
                                     <div className="flex items-center gap-3">
-                                        <div className="h-8 w-8 rounded-full bg-neutral-300 dark:bg-neutral-600" />
+                                        <div className="h-8 w-8 rounded-full bg-neutral-300 dark:bg-neutral-600 flex items-center justify-center">
+                                            <IconClipboardText className="h-4 w-4" />
+                                        </div>
                                         <span className="text-sm text-neutral-900 dark:text-neutral-100">{item.title}</span>
                                     </div>
                                     <span className="text-xs text-neutral-600 dark:text-neutral-400">{item.tag}</span>
                                 </div>
                             ))}
                         </div>
-
-                        <button className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg">
-                            Report Incident
-                        </button>
                     </div>
 
-                    {/* Calendar & Recent Incidents */}
+                    {/* Recent Incidents (LIVE DATA) */}
                     <div className="space-y-6">
-                        {/* Calendar Stats */}
                         <div className="bg-white dark:bg-neutral-800 p-6 rounded-lg border border-neutral-200 dark:border-neutral-700">
-                            <h2 className="text-xl font-bold mb-4 text-neutral-900 dark:text-neutral-100">{currentMonth}</h2>
-                            <div className="grid grid-cols-4 gap-2 text-center text-xs">
-                                {["Low", "Medium", "High", "Critical", "Verified", "Unverif.", "All"].map((label, idx) => (
-                                    <div key={idx}>
-                                        <div className="text-neutral-600 dark:text-neutral-400">{label}</div>
-                                        <div className="font-bold text-neutral-900 dark:text-neutral-100">{idx + 2}</div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Recent Incidents */}
-                        <div className="bg-white dark:bg-neutral-800 p-6 rounded-lg border border-neutral-200 dark:border-neutral-700">
-                            <h2 className="text-xl font-bold mb-4 text-neutral-900 dark:text-neutral-100">Recent Incidents</h2>
-                            <div className="space-y-3">
-                                {[
-                                    { title: "Traffic Accident", location: "Main St, 2 hours ago", time: "14:00" },
-                                    { title: "Fire Alarm", location: "Elm St, 1 hour ago", time: "15:00" },
-                                    { title: "Total Incidents", subtitle: "5 reported today", time: "Last hour: 2" },
-                                    { title: "User Feedback", subtitle: "2 responses, 1 urgent", time: "16:00" },
-                                    { title: "User Feedback", subtitle: "1 response, 0 urgent", time: "16:30" }
-                                ].map((incident, idx) => (
-                                    <div key={idx} className="flex items-center justify-between p-3 bg-neutral-50 dark:bg-neutral-700 rounded-lg">
-                                        <div className="flex items-center gap-3">
-                                            <div className="bg-blue-600 text-white px-3 py-1 rounded text-xs font-semibold">View</div>
-                                            <div>
-                                                <div className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{incident.title}</div>
-                                                <div className="text-xs text-neutral-600 dark:text-neutral-400">{incident.location || incident.subtitle}</div>
+                            <h2 className="text-xl font-bold mb-4 text-neutral-900 dark:text-neutral-100">
+                                Recent Incidents (Live)
+                            </h2>
+                            <div className="space-y-3 max-h-[400px] overflow-y-auto">
+                                {loading ? (
+                                    <p className="text-sm text-neutral-500">Loading live data...</p>
+                                ) : incidents.length === 0 ? (
+                                    <p className="text-sm text-neutral-500">No incidents reported yet.</p>
+                                ) : (
+                                    // 2. Map over the LIVE incidents array
+                                    incidents.map((incident) => (
+                                        <div key={incident.id} className="flex items-center justify-between p-3 bg-neutral-50 dark:bg-neutral-700 rounded-lg">
+                                            <div className="flex items-center gap-3">
+                                                <div className={`
+                                                    px-3 py-1 rounded text-xs font-semibold text-white
+                                                    ${incident.category === 'Crime' ? 'bg-red-600' : 
+                                                      incident.category === 'Fire' ? 'bg-orange-500' : 
+                                                      'bg-blue-600'}
+                                                `}>
+                                                    {incident.category || 'Report'}
+                                                </div>
+                                                <div>
+                                                    <div className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
+                                                        {incident.title}
+                                                    </div>
+                                                    <div className="text-xs text-neutral-600 dark:text-neutral-400">
+                                                        {incident.description ? incident.description.substring(0, 30) + '...' : 'No details'}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="text-right">
+                                                <span className="text-xs text-neutral-600 dark:text-neutral-400 block">
+                                                    {formatTime(incident.timestamp)}
+                                                </span>
+                                                {incident.verified && (
+                                                    <span className="text-[10px] text-green-600 font-bold">Verified</span>
+                                                )}
                                             </div>
                                         </div>
-                                        <span className="text-xs text-neutral-600 dark:text-neutral-400">{incident.time}</span>
-                                    </div>
-                                ))}
+                                    ))
+                                )}
                             </div>
-                            <button className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg">
-                                See all incidents
-                            </button>
                         </div>
                     </div>
                 </div>
 
                 {/* Incident Statistics */}
                 <div className="bg-white dark:bg-neutral-800 p-6 rounded-lg border border-neutral-200 dark:border-neutral-700">
-                    <h2 className="text-xl font-bold mb-4 text-neutral-900 dark:text-neutral-100">Incident Statistics</h2>
+                    <h2 className="text-xl font-bold mb-4 text-neutral-900 dark:text-neutral-100">Live Statistics</h2>
                     <div className="flex items-end justify-between h-40">
+                        {/* Simple visualization based on live count (placeholder bars for now) */}
                         {["Low", "Medium", "High", "Critical", "Verif.", "Unve.", "All"].map((label, idx) => (
                             <div key={idx} className="flex flex-col items-center gap-2 flex-1">
                                 <div
-                                    className="w-12 bg-blue-500 rounded-t"
-                                    style={{ height: `${Math.random() * 100 + 20}%` }}
+                                    className="w-12 bg-blue-500 rounded-t transition-all duration-500"
+                                    style={{ height: `${Math.random() * 80 + 20}%` }}
                                 />
                                 <span className="text-xs text-neutral-600 dark:text-neutral-400">{label}</span>
                             </div>
