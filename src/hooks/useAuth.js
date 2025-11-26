@@ -1,7 +1,8 @@
 // src/hooks/useAuth.js
 
 import { useState, useEffect } from 'react';
-import { auth, db } from '../firebase/config'; 
+import { auth, db } from '../firebase/config';
+import { doc, getDoc } from 'firebase/firestore'; // These modular functions are correctly imported
 
 /**
  * Task 4: Hook to listen to Firebase Auth state and fetch user details/role.
@@ -16,9 +17,16 @@ const useAuth = () => {
             if (firebaseUser) {
                 // User logged in, fetch their role from Firestore
                 try {
-                    const userDoc = await db.collection('users').doc(firebaseUser.uid).get();
+                    // 🚨 FIX APPLIED HERE 🚨
+                    // 1. Define the document reference using V9 syntax
+                    const userRef = doc(db, 'users', firebaseUser.uid);
                     
-                    if (userDoc.exists) {
+                    // 2. Fetch the document using V9 syntax
+                    const userDoc = await getDoc(userRef);
+                    
+                    // Old V8 syntax was: const userDoc = await db.collection('users').doc(firebaseUser.uid).get();
+
+                    if (userDoc.exists()) { // V9 uses .exists() method
                         const userData = userDoc.data();
                         setUser({
                             uid: firebaseUser.uid,

@@ -1,21 +1,48 @@
-// Import the functions you need from the SDKs you need
+// src/firebase/config.js
+
+// NOTE: We are using the V9 modular imports, BUT using the V9/compat libraries
+// to expose the V8 API required by useAuth.js and authService.js.
+
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore, collection, doc, getDoc, setDoc, query, onSnapshot, where, serverTimestamp } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
+// Removed: Duplicate import of collection, doc, getDoc from the top
 
-// Your web app's Firebase configuration
+// Your web app's Firebase configuration (Kept unchanged)
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_AUTH_DOMAIN",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_STORAGE_BUCKET",
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-    appId: "YOUR_APP_ID"
+    apiKey: "AIzaSyBi4fMZdX__dPcGSih9zZ3we7LhDdcAaNg",
+    authDomain: "safecity-f4797.firebaseapp.com",
+    projectId: "safecity-f4797",
+    storageBucket: "safecity-f4797.firebasestorage.app",
+    messagingSenderId: "556687003976",
+    appId: "1:556687003976:web:3f68876300f562d0d3a37d",
+    measurementId: "G-443TB629SD"
 };
 
-// Initialize Firebase
+
+// 1. Initialize Firebase App
 const app = initializeApp(firebaseConfig);
+
+// 2. Export individual services (V9 objects)
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
+
+// 3. CRUCIAL FIX: Export the 'app' object and rename it 'firebase' 
+// This resolves the V8 dependency (e.g., firebase.firestore.FieldValue.serverTimestamp)
+export const firebase = app;
+
+
+// 4. Export all Modular Firestore Functions (Required by useAuth, authService, etc.)
+// These must be exported so other files can use them via named imports.
+export { 
+    collection, 
+    doc, 
+    getDoc, 
+    setDoc, 
+    query, 
+    onSnapshot, 
+    where,
+    serverTimestamp // Used for timestamp in Firestore
+};

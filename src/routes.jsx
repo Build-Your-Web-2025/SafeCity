@@ -5,7 +5,7 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import ReportIncident from './pages/ReportIncident';
 import AdminPanel from './pages/AdminPanel';
-import { useAuth } from './hooks/useAuth';
+import useAuth from './hooks/useAuth';
 
 const PrivateRoute = ({ children }) => {
     const { user, loading } = useAuth();

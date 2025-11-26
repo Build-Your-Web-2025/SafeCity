@@ -1,18 +1,33 @@
 // src/services/authService.js
 
-
 import { auth, db, firebase } from '../firebase/config';
+import { 
+    GoogleAuthProvider, 
+    RecaptchaVerifier, 
+    signInWithPopup, 
+    signInWithPhoneNumber 
+} from 'firebase/auth';
+
+// 🚨 Add V9 Firestore imports needed for saving user data 🚨
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore'; 
 
 const USERS_COLLECTION = 'users';
 
 // --- Helper: Save User Details to Firestore ---
 // This is critical for storing the 'role' field.
 const saveUserDetails = async (uid, email, name, role = 'user') => {
-    await db.collection(USERS_COLLECTION).doc(uid).set({
+    
+    // 🚨 FIX APPLIED HERE 🚨
+    // OLD V8: await db.collection(USERS_COLLECTION).doc(uid).set({...}, { merge: true });
+    
+    // NEW V9 Modular Syntax:
+    const userRef = doc(db, USERS_COLLECTION, uid);
+
+    await setDoc(userRef, {
         name,
         email,
         role, // Default role is 'user'
-        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        createdAt: serverTimestamp(), // Use imported modular serverTimestamp
     }, { merge: true });
 };
 
@@ -32,7 +47,6 @@ export const registerUser = async (email, password, name) => {
     }
 };
 
-<<<<<<< HEAD
 // --- Login User ---
 export const loginUser = async (email, password) => {
     try {
@@ -42,28 +56,30 @@ export const loginUser = async (email, password) => {
         console.error("Login Error:", error);
         return { success: false, error: error.message };
     }
-=======
-export const signInWithGoogle = async () => {
-    const provider = new GoogleAuthProvider();
-    return signInWithPopup(auth, provider);
 };
 
+// --- Google Sign-In (Update the function body) ---
+export const signInWithGoogle = async () => {
+    // FIX: Use the directly imported GoogleAuthProvider class
+    const provider = new GoogleAuthProvider(); 
+    return signInWithPopup(auth, provider); // Use the modular signInWithPopup
+};
+
+// --- ReCAPTCHA Setup (Update the function body) ---
 export const setupRecaptcha = (elementId) => {
+    // FIX: Use the directly imported RecaptchaVerifier class
     return new RecaptchaVerifier(auth, elementId, {
         size: 'invisible',
         callback: (response) => {
-            // reCAPTCHA solved
+            console.log("reCAPTCHA solved");
         }
     });
 };
 
+// --- Phone Sign-In (Update the function body) ---
 export const signInWithPhone = (phoneNumber, recaptchaVerifier) => {
+    // FIX: Use the directly imported signInWithPhoneNumber function
     return signInWithPhoneNumber(auth, phoneNumber, recaptchaVerifier);
-};
-
-export const logoutUser = () => {
-    return signOut(auth);
->>>>>>> 8cbd9e17e60cf83ffc57e8b91341aa4f88ce5f82
 };
 
 // --- Logout User ---
