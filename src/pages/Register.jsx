@@ -1,37 +1,30 @@
-import React, { useState, useEffect } from "react";
-import { Label } from "../components/ui/label";
-import { Input } from "../components/ui/input";
-import { cn } from "../lib/utils";
-import { registerUser, signInWithGoogle, setupRecaptcha, signInWithPhone } from "../services/authService";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { registerUser, signInWithGoogle } from "../services/authService";
 import { IconBrandGoogle } from "@tabler/icons-react";
+import { cn } from "../lib/utils"; // Make sure to import cn if it's used in helper components
+// If you don't have the image file locally, remove the import below or replace it with a placeholder URL
+import authIllustration from '/public/vite.svg'; // Using a placeholder for safety, revert to your path if it works
 
 export default function Register() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
-    const [phoneNumber, setPhoneNumber] = useState("");
-    const [verificationCode, setVerificationCode] = useState("");
-    const [confirmationResult, setConfirmationResult] = useState(null);
-    const [showPhoneVerification, setShowPhoneVerification] = useState(false);
+    const [error, setError] = useState("");
     const navigate = useNavigate();
-
-    useEffect(() => {
-        // Setup recaptcha on component mount
-        if (!window.recaptchaVerifier) {
-            window.recaptchaVerifier = setupRecaptcha('recaptcha-container');
-        }
-    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError("");
+        const fullName = `${firstName} ${lastName}`.trim();
+
         try {
-            await registerUser(email, password);
+            await registerUser(email, password, fullName);
             navigate("/dashboard");
         } catch (error) {
             console.error("Registration failed", error);
-            alert(error.message);
+            setError(error.message || "Registration failed. Please try again.");
         }
     };
 
@@ -41,166 +34,187 @@ export default function Register() {
             navigate("/dashboard");
         } catch (error) {
             console.error("Google sign-in failed", error);
-            alert(error.message);
-        }
-    };
-
-    const handlePhoneSignIn = async (e) => {
-        e.preventDefault();
-        try {
-            const result = await signInWithPhone(phoneNumber, window.recaptchaVerifier);
-            setConfirmationResult(result);
-            setShowPhoneVerification(true);
-            alert("Verification code sent to your phone!");
-        } catch (error) {
-            console.error("Phone sign-in failed", error);
-            alert(error.message);
-        }
-    };
-
-    const handleVerifyCode = async (e) => {
-        e.preventDefault();
-        try {
-            await confirmationResult.confirm(verificationCode);
-            navigate("/dashboard");
-        } catch (error) {
-            console.error("Verification failed", error);
-            alert("Invalid verification code");
+            setError(error.message || "Google sign-in failed. Please try again.");
         }
     };
 
     return (
-        <div className="max-w-md w-full mx-auto rounded-none md:rounded-2xl p-4 md:p-8 shadow-input bg-white dark:bg-black">
-            <h2 className="font-bold text-xl text-neutral-800 dark:text-neutral-200">
-                Welcome to SafeCity
-            </h2>
-            <p className="text-neutral-600 text-sm max-w-sm mt-2 dark:text-neutral-300">
-                Join the community to report and track incidents.
-            </p>
+        <div className="min-h-screen flex">
+            {/* Left Panel - Branding */}
+            <div
+                className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900 p-12 flex-col justify-between relative overflow-hidden"
+            >
+                {/* Background Image Overlay */}
+                <div className="absolute inset-0 opacity-30 bg-[url('https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2301&auto=format&fit=crop')] bg-cover bg-center"></div>
 
-            <form className="my-8" onSubmit={handleSubmit}>
-                <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2 mb-4">
-                    <LabelInputContainer>
-                        <Label htmlFor="firstname">First name</Label>
-                        <Input
-                            id="firstname"
-                            placeholder="Tyler"
-                            type="text"
-                            value={firstName}
-                            onChange={(e) => setFirstName(e.target.value)}
-                        />
-                    </LabelInputContainer>
-                    <LabelInputContainer>
-                        <Label htmlFor="lastname">Last name</Label>
-                        <Input
-                            id="lastname"
-                            placeholder="Durden"
-                            type="text"
-                            value={lastName}
-                            onChange={(e) => setLastName(e.target.value)}
-                        />
-                    </LabelInputContainer>
+                {/* Content */}
+                <div className="relative z-10">
+                    <Link to="/" className="text-white text-2xl font-bold">
+                        SafeCity
+                    </Link>
                 </div>
-                <LabelInputContainer className="mb-4">
-                    <Label htmlFor="email">Email Address</Label>
-                    <Input
-                        id="email"
-                        placeholder="projectmayhem@fc.com"
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                    />
-                </LabelInputContainer>
-                <LabelInputContainer className="mb-4">
-                    <Label htmlFor="password">Password</Label>
-                    <Input
-                        id="password"
-                        placeholder="••••••••"
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                    />
-                </LabelInputContainer>
 
-                <button
-                    className="bg-gradient-to-br relative group/btn from-black dark:from-zinc-900 dark:to-zinc-900 to-neutral-600 block dark:bg-zinc-800 w-full text-white rounded-md h-10 font-medium shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:shadow-[0px_1px_0px_0px_#27272a_inset,0px_-1px_0px_0px_#27272a_inset]"
-                    type="submit"
-                >
-                    Sign up &rarr;
-                    <BottomGradient />
-                </button>
+                <div className="relative z-10">
+                    <div className="mb-8">
+                        <div className="w-24 h-24 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center mb-6 animate-float">
+                            <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                            </svg>
+                        </div>
+                        <h1 className="text-4xl font-bold text-white mb-4">
+                            IncidentDashboard: Your incident reporting tool.
+                        </h1>
+                        <p className="text-blue-100 text-lg">
+                            View and report incidents effortlessly.
+                        </p>
+                    </div>
+                </div>
 
-                <div className="bg-gradient-to-r from-transparent via-neutral-300 dark:via-neutral-700 to-transparent my-8 h-[1px] w-full" />
+                <div className="relative z-10 text-blue-200 text-sm">
+                    © 2025 SafeCity. Making communities safer, together.
+                </div>
+            </div>
 
-                <div className="flex flex-col space-y-4">
-                    <button
-                        className="relative group/btn flex space-x-2 items-center justify-start px-4 w-full text-black rounded-md h-10 font-medium shadow-input bg-gray-50 dark:bg-zinc-900 dark:shadow-[0px_0px_1px_1px_#262626]"
-                        type="button"
-                        onClick={handleGoogleSignIn}
-                    >
-                        <IconBrandGoogle className="h-4 w-4 text-neutral-800 dark:text-neutral-300" />
-                        <span className="text-neutral-700 dark:text-neutral-300 text-sm">
+            {/* Right Panel - Register Form */}
+            <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gray-50">
+                <div className="w-full max-w-md">
+                    {/* Mobile Logo */}
+                    <div className="lg:hidden mb-8">
+                        <Link to="/" className="text-2xl font-bold text-gray-900">
+                            SafeCity
+                        </Link>
+                    </div>
+
+                    <div className="mb-8">
+                        <h2 className="text-3xl font-bold text-gray-900 mb-2">Create Account</h2>
+                        <p className="text-gray-600">
+                            Already have an account?{" "}
+                            <Link to="/login" className="text-blue-600 hover:text-blue-700 font-semibold">
+                                Log in
+                            </Link>
+                        </p>
+                    </div>
+
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        {error && (
+                            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                                {error}
+                            </div>
+                        )}
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <LabelInputContainer>
+                                <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
+                                    First Name
+                                </label>
+                                <input
+                                    id="firstName"
+                                    type="text"
+                                    required
+                                    value={firstName}
+                                    onChange={(e) => setFirstName(e.target.value)}
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                    placeholder="John"
+                                />
+                            </LabelInputContainer>
+                            <LabelInputContainer>
+                                <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
+                                    Last Name
+                                </label>
+                                <input
+                                    id="lastName"
+                                    type="text"
+                                    required
+                                    value={lastName}
+                                    onChange={(e) => setLastName(e.target.value)}
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                    placeholder="Doe"
+                                />
+                            </LabelInputContainer>
+                        </div>
+
+                        <LabelInputContainer>
+                            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                                Email Address
+                            </label>
+                            <input
+                                id="email"
+                                type="email"
+                                required
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                placeholder="you@example.com"
+                            />
+                        </LabelInputContainer>
+
+                        <LabelInputContainer>
+                            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                                Password
+                            </label>
+                            <input
+                                id="password"
+                                type="password"
+                                required
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                placeholder="••••••••"
+                            />
+                            <p className="mt-1 text-xs text-gray-500">
+                                Must be at least 8 characters
+                            </p>
+                        </LabelInputContainer>
+
+                        <button
+                            type="submit"
+                            className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all transform hover:scale-[1.02] relative group"
+                        >
+                            Create Account
+                            <BottomGradient />
+                        </button>
+
+                        <div className="relative">
+                            <div className="absolute inset-0 flex items-center">
+                                <div className="w-full border-t border-gray-300"></div>
+                            </div>
+                            <div className="relative flex justify-center text-sm">
+                                <span className="px-2 bg-gray-50 text-gray-500">Or continue with</span>
+                            </div>
+                        </div>
+
+                        <button
+                            type="button"
+                            onClick={handleGoogleSignIn}
+                            className="w-full flex items-center justify-center gap-3 bg-white border border-gray-300 text-gray-700 py-3 px-4 rounded-lg font-semibold hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all"
+                        >
+                            <IconBrandGoogle className="h-5 w-5" />
                             Sign up with Google
-                        </span>
-                        <BottomGradient />
-                    </button>
+                        </button>
+                    </form>
+
+                    <div className="mt-8 text-center text-sm text-gray-600">
+                        By continuing, you agree to SafeCity's{" "}
+                        <Link to="#" className="text-blue-600 hover:text-blue-700">
+                            Terms of Service
+                        </Link>{" "}
+                        and{" "}
+                        <Link to="#" className="text-blue-600 hover:text-blue-700">
+                            Privacy Policy
+                        </Link>
+                    </div>
                 </div>
-            </form>
-
-            <div className="bg-gradient-to-r from-transparent via-neutral-300 dark:via-neutral-700 to-transparent my-8 h-[1px] w-full" />
-
-            {!showPhoneVerification ? (
-                <form onSubmit={handlePhoneSignIn} className="space-y-4">
-                    <LabelInputContainer>
-                        <Label htmlFor="phone">Phone Number</Label>
-                        <Input
-                            id="phone"
-                            placeholder="+1234567890"
-                            type="tel"
-                            value={phoneNumber}
-                            onChange={(e) => setPhoneNumber(e.target.value)}
-                        />
-                    </LabelInputContainer>
-                    <button
-                        className="bg-gradient-to-br relative group/btn from-black dark:from-zinc-900 dark:to-zinc-900 to-neutral-600 block dark:bg-zinc-800 w-full text-white rounded-md h-10 font-medium shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:shadow-[0px_1px_0px_0px_#27272a_inset,0px_-1px_0px_0px_#27272a_inset]"
-                        type="submit"
-                    >
-                        Sign up with Phone &rarr;
-                        <BottomGradient />
-                    </button>
-                </form>
-            ) : (
-                <form onSubmit={handleVerifyCode} className="space-y-4">
-                    <LabelInputContainer>
-                        <Label htmlFor="code">Verification Code</Label>
-                        <Input
-                            id="code"
-                            placeholder="123456"
-                            type="text"
-                            value={verificationCode}
-                            onChange={(e) => setVerificationCode(e.target.value)}
-                        />
-                    </LabelInputContainer>
-                    <button
-                        className="bg-gradient-to-br relative group/btn from-black dark:from-zinc-900 dark:to-zinc-900 to-neutral-600 block dark:bg-zinc-800 w-full text-white rounded-md h-10 font-medium shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:shadow-[0px_1px_0px_0px_#27272a_inset,0px_-1px_0px_0px_#27272a_inset]"
-                        type="submit"
-                    >
-                        Verify Code &rarr;
-                        <BottomGradient />
-                    </button>
-                </form>
-            )}
-
-            <div id="recaptcha-container"></div>
+            </div>
         </div>
     );
 }
 
+// Kept from HEAD (Local) - These are required by the form above
 const BottomGradient = () => {
     return (
         <>
-            <span className="group-hover/btn:opacity-100 block transition duration-500 opacity-0 absolute h-px w-full -bottom-px inset-x-0 bg-gradient-to-r from-transparent via-cyan-500 to-transparent" />
-            <span className="group-hover/btn:opacity-100 blur-sm block transition duration-500 opacity-0 absolute h-px w-1/2 mx-auto -bottom-px inset-x-10 bg-gradient-to-r from-transparent via-indigo-500 to-transparent" />
+            <span className="group-hover:opacity-100 block transition duration-500 opacity-0 absolute h-px w-full -bottom-px inset-x-0 bg-gradient-to-r from-transparent via-cyan-500 to-transparent" />
+            <span className="group-hover:opacity-100 blur-sm block transition duration-500 opacity-0 absolute h-px w-1/2 mx-auto -bottom-px inset-x-10 bg-gradient-to-r from-transparent via-indigo-500 to-transparent" />
         </>
     );
 };
