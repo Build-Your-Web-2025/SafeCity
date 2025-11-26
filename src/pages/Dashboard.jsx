@@ -15,7 +15,7 @@ import {
 } from "@tabler/icons-react";
 import { motion } from "framer-motion";
 import { cn } from "../lib/utils";
-import { useAuth } from "../hooks/useAuth";
+import useAuth from "../hooks/useAuth";
 import { logoutUser } from "../services/authService";
 import { useNavigate } from "react-router-dom";
 
