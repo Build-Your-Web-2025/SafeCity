@@ -7,9 +7,8 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore, collection, doc, getDoc, setDoc, query, onSnapshot, where, serverTimestamp } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
-// Removed: Duplicate import of collection, doc, getDoc from the top
 
-// Your web app's Firebase configuration (Kept unchanged)
+// Your web app's Firebase configuration
 const firebaseConfig = {
     apiKey: "AIzaSyBi4fMZdX__dPcGSih9zZ3we7LhDdcAaNg",
     authDomain: "safecity-f4797.firebaseapp.com",
@@ -19,7 +18,6 @@ const firebaseConfig = {
     appId: "1:556687003976:web:3f68876300f562d0d3a37d",
     measurementId: "G-443TB629SD"
 };
-
 
 // 1. Initialize Firebase App
 const app = initializeApp(firebaseConfig);
@@ -32,7 +30,6 @@ export const storage = getStorage(app);
 // 3. CRUCIAL FIX: Export the 'app' object and rename it 'firebase' 
 // This resolves the V8 dependency (e.g., firebase.firestore.FieldValue.serverTimestamp)
 export const firebase = app;
-
 
 // 4. Export all Modular Firestore Functions (Required by useAuth, authService, etc.)
 // These must be exported so other files can use them via named imports.
